@@ -12,6 +12,7 @@
     "@apollo/server": "^4.11.0",
     "@as-integrations/next": "^3.1.0",
     "@faker-js/faker": "^9.0.2",
+    "dataloader": "^2.2.2",
     "faker": "^6.6.6",
     "graphql": "^16.9.0",
     "graphql-tag": "^2.12.6",
