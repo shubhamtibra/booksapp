@@ -29,6 +29,6 @@ const Author = sequelize.define(
 );
 // `sequelize.define` also returns the model
 console.log(Author === sequelize.models.Author); // true
-Author.hasMany(Book);
+Author.hasMany(Book, { foreignKey: "author_id" });
 Book.belongsTo(Author, { foreignKey: "author_id" });
 module.exports = Author;
