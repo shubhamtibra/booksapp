@@ -20,7 +20,7 @@ const Author = sequelize.define(
     },
     date_of_birth: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
   },
   {

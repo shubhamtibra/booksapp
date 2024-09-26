@@ -7,24 +7,46 @@ const Book = require("../../models/books");
 const { Op } = require("sequelize");
 const typeDefs = gql`
   type Book {
+    id: Int!
     title: String!
     description: String!
     publishedAt: String!
     author: Author!
+    author_id: Int!
   }
 
   type Author {
+    id: Int!
     name: String!
     biography: String!
-    books: [Book!]!
-    dateOfBirth: String!
+    books: [Book]
+    date_of_birth: String!
   }
 
   type Query {
-    book: Book
+    book(id: Int!): Book
     books: [Book!]!
-    author: Author
+    author(id: Int!): Author
     authors: [Author!]!
+  }
+  type Mutation {
+    addBook(title: String!, description: String!, author_id: Int!): Book
+    addAuthor(name: String!, biography: String!): Author
+    updateBook(
+      id: Int!
+      title: String
+      description: String
+      publishedAt: String
+      author_id: Int
+    ): Book
+    updateAuthor(
+      id: Int!
+      name: String
+      biography: String
+      date_of_birth: String
+    ): Author
+    deleteBook(id: Int!): Int
+    deleteAuthor(id: Int!): Int
   }
 `;
 
@@ -63,7 +85,9 @@ const batchBooks = new DataLoader(async (author_ids) => {
     }
     return mapping;
   }, {});
-  return author_ids.map((author_id) => authorIdToBook[author_id]);
+  return author_ids.map((author_id) =>
+    author_id in authorIdToBook ? authorIdToBook[author_id] : []
+  );
 });
 
 const resolvers = {
@@ -73,6 +97,12 @@ const resolvers = {
     },
     authors: async () => {
       return await Author.findAll();
+    },
+    book: async (parent, args, context, info) => {
+      return Book.findByPk(args.id);
+    },
+    author: async (parent, args, context, info) => {
+      return Author.findByPk(args.id);
     },
   },
   Book: {
@@ -85,6 +115,40 @@ const resolvers = {
       return batchBooks.load(parent.id);
     },
   },
+  Mutation: {
+    addBook: async (parent, args, context, info) => {
+      return await Book.create(args, { returning: true });
+    },
+    addAuthor: async (parent, args, context, info) => {
+      return await Author.create(args, { returning: true });
+    },
+    updateBook: async (parent, args, context, info) => {
+      return (
+        await Book.update(args, {
+          where: { id: args.id },
+          returning: true,
+        })
+      )[1][0];
+    },
+    updateAuthor: async (parent, args, context, info) => {
+      try {
+        let result = await Author.update(args, {
+          where: { id: args.id },
+          returning: true,
+        });
+        return result[1][0];
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    },
+    deleteBook: async (parent, args, context, info) => {
+      return await Book.destroy({ where: { id: args.id }, returning: true });
+    },
+    deleteAuthor: async (parent, args, context, info) => {
+      return await Author.destroy({ where: { id: args.id } });
+    },
+  },
 };
 
 const server = new ApolloServer({
@@ -93,4 +157,4 @@ const server = new ApolloServer({
 });
 
 const handler = startServerAndCreateNextHandler(server);
-export { handler as GET, handler as POST };
+export { handler as GET, handler as POST, handler as PUT, handler as DELETE };
