@@ -46,6 +46,7 @@ export default async function ServerAuthorsComponent({ params, searchParams }) {
               <h2 className={styles.sectionTitle}>Books by This Author</h2>
               {authorObject.Books.map((book) => (
                 <Link
+                  key={book.id}
                   href={`/books/${book.id}`}
                   className={linkStyles.customLink}
                 >
