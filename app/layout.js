@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import styles from "./layout.module.css";
+import { ApolloWrapper } from "./apolloWrapper";
 
 export default function RootLayout({ children }) {
   return (
@@ -23,7 +24,9 @@ export default function RootLayout({ children }) {
               </ul>
             </nav>
           </aside>
-          <main className={styles.mainContent}>{children}</main>
+          <ApolloWrapper>
+            <main className={styles.mainContent}>{children}</main>
+          </ApolloWrapper>
         </div>
       </body>
     </html>
