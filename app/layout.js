@@ -1,11 +1,14 @@
 import React from "react";
 import Link from "next/link";
 import styles from "./layout.module.css";
-import { ApolloWrapper } from "./apolloWrapper";
+//import { ApolloWrapper } from "./apolloWrapper";
+import ClientComponentApolloProviderForSSROfficialDocs from "./apolloClientForSSROfficialDocs";
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    
+    <ClientComponentApolloProviderForSSROfficialDocs>
+  <html lang="en">
       <body className={styles.body}>
         <div className={styles.layout}>
           <aside className={styles.sidebar}>
@@ -24,11 +27,17 @@ export default function RootLayout({ children }) {
               </ul>
             </nav>
           </aside>
-          <ApolloWrapper>
+          
             <main className={styles.mainContent}>{children}</main>
-          </ApolloWrapper>
+          
         </div>
       </body>
     </html>
+
+
+   
+    </ClientComponentApolloProviderForSSROfficialDocs>
+    
+   
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useQuery, gql, ApolloClient, useMutation } from "@apollo/client";
+import { gql, useMutation } from "@apollo/client";
 import BookItem from "../BookItem";
 import styles from "../books.module.css";
 import { useEffect, useState } from "react";
