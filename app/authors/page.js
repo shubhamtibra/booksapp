@@ -8,6 +8,8 @@ import NextPage from "../books/nextPage";
 import Link from "next/link";
 import * as linkStyles from "../styles/link.module.css";
 import CreateAuthorForm from "./CreateAuthorForm";
+import SearchAuthor from "./searchAuthors";
+import { Op } from "sequelize";
 
 export default async function ServerAuthorsComponent({ params, searchParams }) {
   let [page, size] = [0, 10];
@@ -17,16 +19,37 @@ export default async function ServerAuthorsComponent({ params, searchParams }) {
   if (searchParams && "size" in searchParams) {
     size = searchParams["size"];
   }
-  const data = await Author.findAll({
-    include: Book,
-    offset: page * size,
-    limit: size,
-  });
+  let data = [];
+  if (searchParams && "search" in searchParams) {
+    const searchTerm = searchParams["search"];
+    data = await Author.findAll({
+      include: Book,
+      where: {
+        [Op.or]: {
+          name: {
+            [Op.like]: `%${searchTerm}%`,
+          },
+          biography: {
+            [Op.like]: `%${searchTerm}%`,
+          },
+        }
+      },
+      offset: page * size,
+      limit: size,
+    });
+  } else {
+    data = await Author.findAll({
+      include: Book,
+      offset: page * size,
+      limit: size,
+    }); }
+  
 
   return (
     <>
       <div className={styles.authorsContainer}>
         <h1 className={styles.pageTitle}>Authors and Their Books</h1>
+        <SearchAuthor />
         <CreateAuthorForm />
         {data.map((authorObject) => (
           <div key={authorObject.id} className={styles.authorBooksCard}>
