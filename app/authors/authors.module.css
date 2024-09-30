@@ -1,74 +1,59 @@
-.authorsContainer {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .pageTitle {
-    font-size: 2.5rem;
-    color: #2c3e50;
-    margin-bottom: 2rem;
-    text-align: center;
-  }
-  .searchForm {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 2rem;
-  gap: 1rem;
+.authorLink,
+.bookLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  border: 1px solid #e0e0e0;
 }
-  .authorBooksCard {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-    margin-bottom: 2rem;
-  }
-  
-  .authorSection {
-    margin-bottom: 2rem;
-  }
-  
-  .booksSection {
-    display: grid;
-    gap: 1rem;
-  }
-  
-  .sectionTitle {
-    font-size: 1.5rem;
-    color: #3498db;
-    margin-bottom: 1rem;
-  }
-  .editForm {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .editInput,
-  .editTextarea {
-    padding: 0.5rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .editTextarea {
-    min-height: 100px;
-    resize: vertical;
-  }
-  
-  .editButton {
-    background-color: #3498db;
-    color: #fff;
-    border: none;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-  }
-  
-  .editButton:hover {
-    background-color: #2980b9;
-  }
-  
+
+.authorLink:hover,
+.bookLink:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.authorInfo,
+.bookInfo {
+  padding: 1rem;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+.authorName,
+.bookTitle {
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+}
+
+.authorBio,
+.bookDescription {
+  margin: 0;
+  color: #34495e;
+}
+
+.bookList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.bookList li {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 1rem;
+}
+
+.bookList li:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.label {
+  font-weight: bold;
+  color: #3498db;
+  margin-right: 0.5rem;
+}

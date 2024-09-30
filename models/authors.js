@@ -25,7 +25,7 @@ const Author = sequelize.define(
   },
   {
     // Other model options go here
-  }
+  },
 );
 // `sequelize.define` also returns the model
 console.log(Author === sequelize.models.Author); // true

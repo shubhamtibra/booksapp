@@ -1,24 +1,16 @@
 import Author from "@/models/authors";
-import React from "react";
-const Book = require("../../models/books");
-import BookItem from "./BookItem";
-import AuthorItem from "../authors/AuthorItem";
-import styles from "./books.module.css";
-import NextPage from "./nextPage";
+import Book from "@/models/books";
 import Link from "next/link";
-import * as linkStyle from "../styles/link.module.css";
-import CreateBookForm from "./CreateBookForm";
-import SearchBooks from "./searchBooks";
 import { Op } from "sequelize";
+import Pagination from "../components/Pagination";
+import SearchForm from "../components/SearchForm";
+import styles from "../styles/shared.module.css";
+import { getPaginationParams } from "../utils/pagination";
+import bookStyles from "./books.module.css";
+import CreateBookForm from "./CreateBookForm";
 
 export default async function ServerBooksComponent({ params, searchParams }) {
-  let [page, size] = [0, 10];
-  if (searchParams && "page" in searchParams) {
-    page = Number(searchParams["page"]);
-  }
-  if (searchParams && "size" in searchParams) {
-    size = searchParams["size"];
-  }
+  const { page, size } = getPaginationParams(searchParams);
   let data = [];
   if (searchParams && "search" in searchParams) {
     const searchTerm = searchParams["search"];
@@ -32,58 +24,79 @@ export default async function ServerBooksComponent({ params, searchParams }) {
           description: {
             [Op.like]: `%${searchTerm}%`,
           },
-        }
+        },
       },
       offset: page * size,
       limit: size,
     });
-  }
-  else {
+  } else {
     data = await Book.findAll({
-    include: Author,
-    offset: page * size,
-    limit: size,
-  });
-}
+      include: Author,
+      offset: page * size,
+      limit: size,
+    });
+  }
 
   return (
     <>
-      <div className={styles.booksContainer}>
+      <div className={styles.container}>
         <h1 className={styles.pageTitle}>Books and Authors</h1>
-        <SearchBooks></SearchBooks>
-        <CreateBookForm />
-        {data.map((bookObject) => (
-          <div key={bookObject.id} className={styles.bookAuthorCard}>
-            <div className={styles.bookSection}>
-              <h2 className={styles.sectionTitle}>Book Details</h2>
-              <Link
-                href={`/books/${bookObject.id}`}
-                className={linkStyle.customLink}
-              >
-                <BookItem
-                  title={bookObject.title}
-                  description={bookObject.description}
-                />
-              </Link>
-            </div>
-            {bookObject.Author && (
-              <div className={styles.authorSection}>
-                <h2 className={styles.sectionTitle}>Author Details</h2>
-                <Link
-                  href={`/authors/${bookObject.Author.id}`}
-                  className={linkStyle.customLink}
-                >
-                  <AuthorItem
-                    name={bookObject.Author.name}
-                    biography={bookObject.Author.biography}
-                  />
-                </Link>
-              </div>
-            )}
-          </div>
-        ))}
+        <div className={styles.searchFormCreateFormContainer}>
+          <SearchForm placeholder="Search Books" />
+          <CreateBookForm />
+        </div>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th className={styles.tableHeader}>Book</th>
+              <th className={styles.tableHeader}>Author</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((book) => (
+              <tr key={book.id} className={styles.tableRow}>
+                <td className={styles.tableCell}>
+                  <Link
+                    href={`/books/${book.id}`}
+                    className={bookStyles.bookLink}
+                  >
+                    <div className={bookStyles.bookInfo}>
+                      <p>
+                        <span className={bookStyles.label}>Title:</span>
+                        {book.title}
+                      </p>
+                      <p>
+                        <span className={bookStyles.label}>Description:</span>
+                        {book.description}
+                      </p>
+                    </div>
+                  </Link>
+                </td>
+                <td className={styles.tableCell}>
+                  {book.Author && (
+                    <Link
+                      href={`/authors/${book.Author.id}`}
+                      className={bookStyles.authorLink}
+                    >
+                      <div className={bookStyles.authorInfo}>
+                        <p>
+                          <span className={bookStyles.label}>Name:</span>
+                          {book.Author.name}
+                        </p>
+                        <p>
+                          <span className={bookStyles.label}>Biography:</span>
+                          {book.Author.biography}
+                        </p>
+                      </div>
+                    </Link>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <NextPage></NextPage>
+      <Pagination />
     </>
   );
 }

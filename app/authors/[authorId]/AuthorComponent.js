@@ -1,14 +1,12 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useQuery, gql, ApolloClient, useMutation } from "@apollo/client";
-import AuthorItem from "../AuthorItem";
-import BookItem from "../../books/BookItem";
-import styles from "../authors.module.css";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-
+import { gql, useMutation } from "@apollo/client";
 import { useSuspenseQuery } from "@apollo/experimental-nextjs-app-support/ssr";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import AuthorItem from "../../components/AuthorItem";
+import styles from "../../styles/shared.module.css";
+import authorStyles from "../authors.module.css";
 
 const GET_AUTHOR = gql`
   query GetAuthor($id: Int!) {
@@ -41,16 +39,33 @@ export default function AuthorComponent() {
   const { author } = data;
   const [isEditing, setIsEditing] = useState(false);
   const [editedAuthor, setEditedAuthor] = useState(author);
+  const [isFormChanged, setIsFormChanged] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setEditedAuthor(author);
+  }, [author]);
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
+
   const handleEdit = () => {
     setIsEditing(true);
+    setIsFormChanged(false);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    updateAuthor({ variables: { ...editedAuthor } });
-    setIsEditing(false);
+    setIsSubmitting(true);
+    try {
+      await updateAuthor({ variables: { ...editedAuthor } });
+      setIsEditing(false);
+      setIsFormChanged(false);
+    } catch (error) {
+      console.error("Error updating author:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -58,36 +73,58 @@ export default function AuthorComponent() {
       ...editedAuthor,
       [e.target.name]: e.target.value,
     });
+    setIsFormChanged(true);
   };
+
   return (
     author && (
-      <div className={styles.authorsContainer}>
+      <div className={`${styles.container} ${styles.narrowContainer}`}>
         <h1 className={styles.pageTitle}>Author Details</h1>
-        <div className={styles.authorBooksCard}>
-          <div className={styles.authorSection}>
+        <div className={styles.card}>
+          <div className={authorStyles.authorSection}>
             <h2 className={styles.sectionTitle}>Author Information</h2>
             {isEditing ? (
-              <form className={styles.editForm}>
+              <form className={styles.form}>
+                <label for="name" className={styles.label}>
+                  Author Name:
+                </label>
+
                 <input
-                  className={styles.editInput}
+                  className={styles.input}
                   name="name"
+                  id="name"
                   value={editedAuthor.name}
                   onChange={handleChange}
+                  required
                 />
+
+                <label for="biography" className={styles.label}>
+                  {" "}
+                  Author Biography
+                </label>
+
                 <textarea
-                  className={styles.editTextarea}
+                  className={styles.textarea}
                   name="biography"
+                  id="biography"
                   value={editedAuthor.biography}
                   onChange={handleChange}
+                  required
                 />
-                <button className={styles.editButton} onClick={handleSave}>
+
+                <button
+                  type="submit"
+                  className={styles.button}
+                  onClick={handleSave}
+                  disabled={!isFormChanged || isSubmitting}
+                >
                   Save Changes
                 </button>
               </form>
             ) : (
               <>
                 <AuthorItem name={author.name} biography={author.biography} />
-                <button className={styles.editButton} onClick={handleEdit}>
+                <button className={styles.button} onClick={handleEdit}>
                   Edit Author
                 </button>
               </>

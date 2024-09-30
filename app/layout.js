@@ -1,7 +1,6 @@
-import React from "react";
 import Link from "next/link";
-import styles from "./layout.module.css";
 import { ApolloWrapper } from "./apolloWrapper";
+import styles from "./styles/layout.module.css";
 
 export default function RootLayout({ children }) {
   return (

@@ -1,73 +1,28 @@
-.booksContainer {
-  max-width: 800px;
-  margin: 0 auto;
+.bookLink,
+.authorLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
-.pageTitle {
-  font-size: 2.5rem;
-  color: #2c3e50;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-
-.bookAuthorCard {
-  background-color: #fff;
-  border-radius: 8px;
+.bookLink:hover,
+.authorLink:hover {
+  transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-  margin-bottom: 2rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
 }
 
-.bookSection,
-.authorSection {
-  flex: 1 1 300px;
+.bookInfo,
+.authorInfo {
+  padding: 1rem;
+  border-radius: 4px;
+  background-color: #f8f9fa;
 }
 
-.sectionTitle {
-  font-size: 1.5rem;
+.label {
+  font-weight: bold;
   color: #3498db;
-  margin-bottom: 1rem;
-}
-.searchForm {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-.editForm {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.editInput,
-.editTextarea {
-  padding: 0.5rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.editTextarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-.editButton {
-  background-color: #3498db;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-  margin: 0 1rem;
-}
-
-.editButton:hover {
-  background-color: #2980b9;
+  margin-right: 0.5rem;
 }
