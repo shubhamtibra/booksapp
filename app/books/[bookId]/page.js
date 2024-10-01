@@ -1,10 +1,11 @@
-import dynamic from "next/dynamic";
-
-const BookComponent = dynamic(() => import("./BookComponent"), {
-  ssr: false,
-});
+import ClientOnly from "@/app/components/clientOnly";
+import BookComponent from "./BookComponent";
 
 export default function Book({ params }) {
   const bookId = parseInt(params.bookId);
-  return <BookComponent bookId={bookId} />;
+  return (
+    <ClientOnly>
+      <BookComponent bookId={bookId} />
+    </ClientOnly>
+  );
 }

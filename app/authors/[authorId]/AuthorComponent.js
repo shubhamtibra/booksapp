@@ -1,7 +1,5 @@
 "use client";
-
-import { gql, useMutation } from "@apollo/client";
-import { useSuspenseQuery } from "@apollo/experimental-nextjs-app-support/ssr";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import AuthorItem from "../../components/AuthorItem";
@@ -31,23 +29,19 @@ const UPDATE_AUTHOR = gql`
 export default function AuthorComponent() {
   const params = useParams();
   const authorId = parseInt(params.authorId);
-
-  const { loading, error, data } = useSuspenseQuery(GET_AUTHOR, {
+  const { data, loading, error } = useQuery(GET_AUTHOR, {
     variables: { id: authorId },
   });
+  useEffect(() => {
+    if (data && data.author) {
+      setEditedAuthor(data.author);
+    }
+  }, [data]);
   const [updateAuthor] = useMutation(UPDATE_AUTHOR);
-  const { author } = data;
   const [isEditing, setIsEditing] = useState(false);
-  const [editedAuthor, setEditedAuthor] = useState(author);
+  const [editedAuthor, setEditedAuthor] = useState();
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    setEditedAuthor(author);
-  }, [author]);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -76,8 +70,10 @@ export default function AuthorComponent() {
     setIsFormChanged(true);
   };
 
+  if (loading) return <div className={styles.loadingIcon}></div>;
+  if (error) return <p>Error: {error.stack}</p>;
   return (
-    author && (
+    editedAuthor && (
       <div className={`${styles.container} ${styles.narrowContainer}`}>
         <h1 className={styles.pageTitle}>Author Details</h1>
         <div className={styles.card}>
@@ -85,7 +81,7 @@ export default function AuthorComponent() {
             <h2 className={styles.sectionTitle}>Author Information</h2>
             {isEditing ? (
               <form className={styles.form}>
-                <label for="name" className={styles.label}>
+                <label htmlFor="name" className={styles.label}>
                   Author Name:
                 </label>
 
@@ -98,7 +94,7 @@ export default function AuthorComponent() {
                   required
                 />
 
-                <label for="biography" className={styles.label}>
+                <label htmlFor="biography" className={styles.label}>
                   {" "}
                   Author Biography
                 </label>
@@ -123,7 +119,10 @@ export default function AuthorComponent() {
               </form>
             ) : (
               <>
-                <AuthorItem name={author.name} biography={author.biography} />
+                <AuthorItem
+                  name={editedAuthor.name}
+                  biography={editedAuthor.biography}
+                />
                 <button className={styles.button} onClick={handleEdit}>
                   Edit Author
                 </button>
