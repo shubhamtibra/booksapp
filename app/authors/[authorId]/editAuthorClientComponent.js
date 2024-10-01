@@ -1,6 +1,21 @@
-'use client';
-import { EditAuthorServerAction } from "./editAuthorServerAction";
+"use client";
+import { gql, useMutation } from "@apollo/client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import styles from "../authors.module.css";
+
+const UPDATE_AUTHOR = gql`
+  mutation UpdateAuthor($id: Int!, $name: String, $biography: String) {
+    updateAuthor(id: $id, name: $name, biography: $biography) {
+      id
+      name
+      biography
+    }
+  }
+`;
 export default function EditAuthorClientComponent({ author }) {
+  const router = useRouter();
+  const [updateAuthor] = useMutation(UPDATE_AUTHOR);
   const [isEditing, setIsEditing] = useState(false);
   const [editedAuthor, setEditedAuthor] = useState(author);
   const handleEdit = () => {
@@ -10,18 +25,18 @@ export default function EditAuthorClientComponent({ author }) {
     e.preventDefault();
     updateAuthor({ variables: { ...editedAuthor } });
     setIsEditing(false);
+    router.refresh();
   };
   const handleChange = (e) => {
     setEditedAuthor({
       ...editedAuthor,
       [e.target.name]: e.target.value,
     });
-    };
-    return (isEditing ? (
-        <>
-        <form action={EditAuthorServerAction} className={styles.editForm}>
-        <input type="hidden" name="id" value={author.id}>
-        </input>
+  };
+  return isEditing ? (
+    <>
+      <form onSubmit={handleSave} className={styles.editForm}>
+        <input type="hidden" name="id" value={author.id}></input>
         <input
           className={styles.editInput}
           name="name"
@@ -38,13 +53,14 @@ export default function EditAuthorClientComponent({ author }) {
           Save Changes
         </button>
       </form>
-        </>
-        
-      ) : (
-        <>
-          <button className={styles.editButton} onClick={handleEdit}>
-            Edit Author
-          </button>
-        </>
-      ));
+    </>
+  ) : (
+    <>
+      <button className={styles.editButton} onClick={handleEdit}>
+        Edit Author
+      </button>
+    </>
+  );
 }
+
+export async function EditAuthorServerAction(formData) {}
