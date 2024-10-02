@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import styles from "../styles/shared.module.css";
 
 export default function Pagination() {
   const pathname = usePathname();
@@ -15,8 +14,8 @@ export default function Pagination() {
   };
 
   return (
-    <div className={styles.pagination}>
-      <Link href={createPageUrl(currentPage + 1)} className={styles.button}>
+    <div className="flex justify-center mt-8">
+      <Link href={createPageUrl(currentPage + 1)} className="btn">
         Next Page
       </Link>
     </div>

@@ -1,20 +1,38 @@
 "use client";
 
-import { gql, useMutation } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import styles from "../styles/shared.module.css";
 
 const CREATE_BOOK = gql`
   mutation CreateBook(
     $title: String!
     $description: String!
     $author_id: Int!
+    $publishedAt: String!
+    $profilePhotoUrl: String
   ) {
-    addBook(title: $title, description: $description, author_id: $author_id) {
+    addBook(
+      title: $title
+      description: $description
+      author_id: $author_id
+      publishedAt: $publishedAt
+      profilePhotoUrl: $profilePhotoUrl
+    ) {
       id
       title
       description
+      publishedAt
+      profilePhotoUrl
+    }
+  }
+`;
+
+const GET_ALL_AUTHORS = gql`
+  query GetAllAuthors {
+    allAuthors {
+      id
+      name
     }
   }
 `;
@@ -22,11 +40,15 @@ const CREATE_BOOK = gql`
 export default function CreateBookForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [author_id, setAuthorId] = useState("");
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState("");
+  const [publishedAt, setPublishedAt] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createBook] = useMutation(CREATE_BOOK);
   const router = useRouter();
+  const [author_id, setAuthorId] = useState("");
+  const { data: authorsData, loading: authorsLoading } =
+    useQuery(GET_ALL_AUTHORS);
 
   useEffect(() => {
     setIsFormValid(
@@ -41,7 +63,13 @@ export default function CreateBookForm() {
     setIsSubmitting(true);
     try {
       const newBook = await createBook({
-        variables: { title, description, author_id: parseInt(author_id) },
+        variables: {
+          title,
+          description,
+          author_id: parseInt(author_id),
+          profilePhotoUrl,
+          publishedAt,
+        },
       });
       router.push(`/books/${newBook.data.addBook.id}`);
     } catch (error) {
@@ -52,32 +80,59 @@ export default function CreateBookForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
+    <form onSubmit={handleSubmit} className="space-y-4">
       <input
-        className={styles.input}
+        className="input w-full text-dark-foreground"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Book Title"
         required
       />
       <textarea
-        className={styles.textarea}
+        className="input w-full h-32 text-dark-foreground"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Book Description"
         required
       />
-      <input
-        className={styles.input}
+      <select
+        className="input w-full text-dark-foreground"
+        value={author_id}
+        onChange={(e) => setAuthorId(e.target.value)}
+        required
+      >
+        <option value="">Select an author</option>
+        {authorsData &&
+          authorsData.allAuthors.map((author) => (
+            <option key={author.id} value={author.id}>
+              {author.name}
+            </option>
+          ))}
+      </select>
+      {/* <input
+        className="input w-full text-dark-foreground"
         type="number"
         value={author_id}
         onChange={(e) => setAuthorId(e.target.value)}
         placeholder="Author ID"
         required
+      /> */}
+      <input
+        className="input w-full text-dark-foreground"
+        value={profilePhotoUrl}
+        onChange={(e) => setProfilePhotoUrl(e.target.value)}
+        placeholder="Profile Photo URL (optional)"
       />
+      <input
+        className="input w-full text-dark-foreground"
+        value={publishedAt}
+        onChange={(e) => setPublishedAt(e.target.value)}
+        placeholder="Published At (optional)"
+        type="date"
+      ></input>
       <button
         type="submit"
-        className={styles.button}
+        className="btn w-full"
         disabled={!isFormValid || isSubmitting}
       >
         Create Book

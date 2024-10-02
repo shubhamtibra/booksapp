@@ -1,7 +1,6 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import styles from "../styles/shared.module.css";
 
 export default function SearchForm({ placeholder }) {
   const pathname = usePathname();
@@ -22,15 +21,15 @@ export default function SearchForm({ placeholder }) {
   }
 
   return (
-    <form className={styles.searchForm} onSubmit={handleSearch}>
+    <form className="flex items-center" onSubmit={handleSearch}>
       <input
-        className={`${styles.input}`}
+        className="input flex-grow mr-2"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder={placeholder}
       />
       <button
-        className={styles.button}
+        className="btn whitespace-nowrap"
         type="submit"
         disabled={!isButtonEnabled || isSubmitting}
       >

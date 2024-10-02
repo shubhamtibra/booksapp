@@ -2,92 +2,103 @@ import Author from "@/models/authors";
 import Book from "@/models/books";
 import Link from "next/link";
 import { Op } from "sequelize";
+import AuthorItem from "../components/AuthorItem";
+import BookItem from "../components/BookItem";
 import Pagination from "../components/Pagination";
 import SearchForm from "../components/SearchForm";
-import styles from "../styles/shared.module.css";
+import { validateImageUrl } from "../utils/imageValidator";
 import { getPaginationParams } from "../utils/pagination";
-import bookStyles from "./books.module.css";
 import CreateBookForm from "./CreateBookForm";
 
 export default async function ServerBooksComponent({ params, searchParams }) {
-  const { page, size } = getPaginationParams(searchParams);
+  const { page, size, searchTerm } = getPaginationParams(searchParams);
   let data = [];
-  if (searchParams && "search" in searchParams) {
-    const searchTerm = searchParams["search"];
-    data = await Book.findAll({
-      include: Author,
-      where: {
-        [Op.or]: {
-          title: {
-            [Op.like]: `%${searchTerm}%`,
-          },
-          description: {
-            [Op.like]: `%${searchTerm}%`,
-          },
+  const offset = page * size;
+  const where = searchTerm
+    ? {
+        title: {
+          [Op.like]: `%${searchTerm}%`,
         },
+      }
+    : {};
+
+  const { rows, count } = await Book.findAndCountAll({
+    where,
+    limit: size,
+    offset: offset,
+    include: [Author],
+  });
+
+  const validatedBooks = await Promise.all(
+    rows.map(async (book) => ({
+      ...book.toJSON(),
+      profilePhotoUrl: await validateImageUrl(book.profilePhotoUrl, "book"),
+      Author: {
+        ...book.Author.toJSON(),
+        profilePhotoUrl: await validateImageUrl(
+          book.Author.profilePhotoUrl,
+          "author"
+        ),
       },
-      offset: page * size,
-      limit: size,
-    });
-  } else {
-    data = await Book.findAll({
-      include: Author,
-      offset: page * size,
-      limit: size,
-    });
-  }
+    }))
+  );
+
+  data = validatedBooks;
 
   return (
     <>
-      <div className={styles.container}>
-        <h1 className={styles.pageTitle}>Books and Authors</h1>
-        <div className={styles.searchFormCreateFormContainer}>
-          <SearchForm placeholder="Search Books" />
-          <CreateBookForm />
+      <div className="container mx-auto px-4">
+        <h1 className="text-3xl font-bold text-center mb-8 text-dark-primary">
+          Books and Authors
+        </h1>
+        <div className="flex flex-col justify-center items-center gap-8 mb-8">
+          <div className="w-1/2">
+            <SearchForm placeholder="Search Books" />
+          </div>
+          <div className="w-1/2">
+            <CreateBookForm />
+          </div>
         </div>
-        <table className={styles.table}>
+
+        <table className="w-full border-collapse mb-8">
           <thead>
             <tr>
-              <th className={styles.tableHeader}>Book</th>
-              <th className={styles.tableHeader}>Author</th>
+              <th className="bg-dark-primary text-dark-foreground font-bold text-left p-4">
+                Book
+              </th>
+              <th className="bg-dark-primary text-dark-foreground font-bold text-left p-4">
+                Author
+              </th>
             </tr>
           </thead>
           <tbody>
             {data.map((book) => (
-              <tr key={book.id} className={styles.tableRow}>
-                <td className={styles.tableCell}>
+              <tr key={book.id} className="border-b border-dark-secondary">
+                <td className="p-4">
                   <Link
                     href={`/books/${book.id}`}
-                    className={bookStyles.bookLink}
+                    className="block hover:bg-dark-secondary rounded transition-all duration-200 transform hover:scale-105 cursor-pointer"
                   >
-                    <div className={bookStyles.bookInfo}>
-                      <p>
-                        <span className={bookStyles.label}>Title:</span>
-                        {book.title}
-                      </p>
-                      <p>
-                        <span className={bookStyles.label}>Description:</span>
-                        {book.description}
-                      </p>
-                    </div>
+                    <BookItem
+                      title={book.title}
+                      description={book.description}
+                      profilePhotoUrl={book.profilePhotoUrl}
+                      publishedAt={book.publishedAt}
+                    />
                   </Link>
                 </td>
-                <td className={styles.tableCell}>
+                <td className="p-4">
                   {book.Author && (
                     <Link
                       href={`/authors/${book.Author.id}`}
-                      className={bookStyles.authorLink}
+                      className="block hover:bg-dark-secondary rounded transition-all duration-200 transform hover:scale-105 cursor-pointer"
                     >
-                      <div className={bookStyles.authorInfo}>
-                        <p>
-                          <span className={bookStyles.label}>Name:</span>
-                          {book.Author.name}
-                        </p>
-                        <p>
-                          <span className={bookStyles.label}>Biography:</span>
-                          {book.Author.biography}
-                        </p>
-                      </div>
+                      <AuthorItem
+                        name={book.Author.name}
+                        biography={book.Author.biography}
+                        profilePhotoUrl={book.Author.profilePhotoUrl}
+                        date_of_birth={book.Author.date_of_birth}
+                      />
                     </Link>
                   )}
                 </td>

@@ -1,6 +1,7 @@
-export function getPaginationParams(searchParams, defaultSize = 10) {
+export function getPaginationParams(searchParams) {
   let page = 0;
-  let size = defaultSize;
+  let size = 5;
+  let searchTerm = null;
 
   if (searchParams && "page" in searchParams) {
     page = Number(searchParams.page);
@@ -8,6 +9,9 @@ export function getPaginationParams(searchParams, defaultSize = 10) {
   if (searchParams && "size" in searchParams) {
     size = Number(searchParams.size);
   }
+  if (searchParams && "search" in searchParams) {
+    searchTerm = searchParams.search;
+  }
 
-  return { page, size };
+  return { page, size, searchTerm };
 }
