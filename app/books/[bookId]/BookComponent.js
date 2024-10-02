@@ -1,7 +1,6 @@
 "use client";
 
-import { gql, useMutation } from "@apollo/client";
-import { useSuspenseQuery } from "@apollo/experimental-nextjs-app-support/ssr";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import BookItem from "../../components/BookItem";
@@ -32,22 +31,20 @@ export default function BookComponent() {
   const params = useParams();
   const bookId = parseInt(params.bookId);
 
-  const { loading, error, data } = useSuspenseQuery(GET_BOOK, {
+  const { loading, error, data } = useQuery(GET_BOOK, {
     variables: { id: bookId },
   });
   const [updateBook] = useMutation(UPDATE_BOOK);
-  const { book } = data;
   const [isEditing, setIsEditing] = useState(false);
-  const [editedBook, setEditedBook] = useState(book);
+  const [editedBook, setEditedBook] = useState();
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    setEditedBook(book);
-  }, [book]);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+    if (data && data.book) {
+      setEditedBook(data.book);
+    }
+  }, [data]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -75,9 +72,10 @@ export default function BookComponent() {
     });
     setIsFormChanged(true);
   };
-
+  if (loading) return <div className={styles.loadingIcon}></div>;
+  if (error) return <p>Error: {error.message}</p>;
   return (
-    book && (
+    editedBook && (
       <div className={`${styles.container} ${styles.narrowContainer}`}>
         <h1 className={styles.pageTitle}>Book Details</h1>
         <div className={styles.card}>
@@ -85,7 +83,7 @@ export default function BookComponent() {
             <h2 className={styles.sectionTitle}>Book Information</h2>
             {isEditing ? (
               <form className={styles.form}>
-                <label for="title" className={styles.label}>
+                <label htmlFor="title" className={styles.label}>
                   {" "}
                   Book Title:
                 </label>
@@ -99,7 +97,7 @@ export default function BookComponent() {
                   required
                 />
 
-                <label for="description" className={styles.label}>
+                <label htmlFor="description" className={styles.label}>
                   Book Description
                 </label>
 
@@ -123,7 +121,10 @@ export default function BookComponent() {
               </form>
             ) : (
               <>
-                <BookItem title={book.title} description={book.description} />
+                <BookItem
+                  title={editedBook.title}
+                  description={editedBook.description}
+                />
                 <button className={styles.button} onClick={handleEdit}>
                   Edit Book
                 </button>
