@@ -23,7 +23,7 @@ const Book = sequelize.define(
     },
     publishedAt: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
   },
   {

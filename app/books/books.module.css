@@ -31,3 +31,36 @@
   color: #3498db;
   margin-bottom: 1rem;
 }
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.editInput,
+.editTextarea {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.editTextarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.editButton {
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.editButton:hover {
+  background-color: #2980b9;
+}
