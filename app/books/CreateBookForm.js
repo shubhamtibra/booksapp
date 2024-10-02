@@ -80,36 +80,25 @@ export default function CreateBookForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <input
-        className="input w-full text-dark-foreground"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Book Title"
-        required
-      />
-      <textarea
-        className="input w-full h-32 text-dark-foreground"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Book Description"
-        required
-      />
-      <select
-        className="input w-full text-dark-foreground"
-        value={author_id}
-        onChange={(e) => setAuthorId(e.target.value)}
-        required
-      >
-        <option value="">Select an author</option>
-        {authorsData &&
-          authorsData.allAuthors.map((author) => (
-            <option key={author.id} value={author.id}>
-              {author.name}
-            </option>
-          ))}
-      </select>
-      {/* <input
+    <div>
+      <h2 className="text-xl font-bold text-dark-primary mb-4">Create Book</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          className="input w-full text-dark-foreground"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Book Title"
+          required
+        />
+        <textarea
+          className="input w-full h-32 text-dark-foreground"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Book Description"
+          required
+        />
+
+        {/* <input
         className="input w-full text-dark-foreground"
         type="number"
         value={author_id}
@@ -117,26 +106,44 @@ export default function CreateBookForm() {
         placeholder="Author ID"
         required
       /> */}
-      <input
-        className="input w-full text-dark-foreground"
-        value={profilePhotoUrl}
-        onChange={(e) => setProfilePhotoUrl(e.target.value)}
-        placeholder="Profile Photo URL (optional)"
-      />
-      <input
-        className="input w-full text-dark-foreground"
-        value={publishedAt}
-        onChange={(e) => setPublishedAt(e.target.value)}
-        placeholder="Published At (optional)"
-        type="date"
-      ></input>
-      <button
-        type="submit"
-        className="btn w-full"
-        disabled={!isFormValid || isSubmitting}
-      >
-        Create Book
-      </button>
-    </form>
+        <input
+          className="input w-full text-dark-foreground"
+          value={profilePhotoUrl}
+          onChange={(e) => setProfilePhotoUrl(e.target.value)}
+          placeholder="Profile Photo URL (optional)"
+        />
+        <input
+          className="input w-full text-dark-foreground"
+          value={publishedAt}
+          onChange={(e) => setPublishedAt(e.target.value)}
+          placeholder="Publish date"
+          type="text"
+          onFocus={(e) => (e.target.type = "date")}
+          onBlur={(e) => (e.target.type = "text")}
+        ></input>
+
+        <select
+          className="input w-full text-dark-foreground"
+          value={author_id}
+          onChange={(e) => setAuthorId(e.target.value)}
+          required
+        >
+          <option value="">Select author</option>
+          {authorsData &&
+            authorsData.allAuthors.map((author) => (
+              <option key={author.id} value={author.id}>
+                {author.name}
+              </option>
+            ))}
+        </select>
+        <button
+          type="submit"
+          className="btn w-full"
+          disabled={!isFormValid || isSubmitting}
+        >
+          Create Book
+        </button>
+      </form>
+    </div>
   );
 }

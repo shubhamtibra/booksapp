@@ -36,11 +36,17 @@ const Book = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    reviews: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [],
+    },
   },
   {
     // Other model options go here
   }
 );
 // `sequelize.define` also returns the model
-console.log(Book === sequelize.models.Book); // true
+console.log(Book === sequelize.models.Book);
+sequelize.sync(); // true
 module.exports = Book;

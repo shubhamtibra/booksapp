@@ -119,48 +119,58 @@ export default function AuthorComponent() {
 
         {isEditing ? (
           <form className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-dark-primary mb-1">
-                Author Name:
-              </label>
-              <input
-                className="input w-full text-dark-foreground"
-                name="name"
-                id="name"
-                value={editedAuthor.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="biography"
-                className="block text-dark-primary mb-1"
-              >
-                Author Biography:
-              </label>
-              <textarea
-                className="input w-full h-32 text-dark-foreground"
-                name="biography"
-                id="biography"
-                value={editedAuthor.biography}
-                onChange={handleChange}
-                required
-              />
-              <label
-                htmlFor="profilePhotoUrl"
-                className="block text-dark-primary mb-1"
-              >
-                Profile Photo URL:
-              </label>
-              <input
-                className="input w-full text-dark-foreground"
-                name="profilePhotoUrl"
-                id="profilePhotoUrl"
-                value={editedAuthor.profilePhotoUrl || ""}
-                onChange={handleChange}
-              />
-            </div>
+            <label htmlFor="name" className="block text-dark-primary mb-1">
+              Author Name:
+            </label>
+            <input
+              className="input w-full text-dark-foreground"
+              name="name"
+              id="name"
+              value={editedAuthor.name}
+              onChange={handleChange}
+              required
+            />
+
+            <label htmlFor="biography" className="block text-dark-primary mb-1">
+              Author Biography:
+            </label>
+            <textarea
+              className="input w-full h-32 text-dark-foreground"
+              name="biography"
+              id="biography"
+              value={editedAuthor.biography}
+              onChange={handleChange}
+              required
+            />
+            <label
+              htmlFor="profilePhotoUrl"
+              className="block text-dark-primary mb-1"
+            >
+              Profile Photo URL:
+            </label>
+            <input
+              className="input w-full text-dark-foreground"
+              name="profilePhotoUrl"
+              id="profilePhotoUrl"
+              value={editedAuthor.profilePhotoUrl || ""}
+              onChange={handleChange}
+            />
+
+            <label
+              htmlFor="date_of_birth"
+              className="block text-dark-primary mb-1"
+            >
+              Date of Birth:
+            </label>
+            <input
+              className="input w-full text-dark-foreground"
+              name="date_of_birth"
+              id="date_of_birth"
+              value={editedAuthor.date_of_birth}
+              onChange={handleChange}
+              type="date"
+            />
+
             <button
               type="submit"
               className="btn w-full"
