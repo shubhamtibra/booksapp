@@ -3,14 +3,18 @@ import { ApolloServer } from "@apollo/server";
 import { startServerAndCreateNextHandler } from "@as-integrations/next";
 import DataLoader from "dataloader";
 import { gql } from "graphql-tag";
+import moment from "moment/moment";
+import { validateImageUrl } from "../utils/imageValidator";
 const Book = require("../../models/books");
 const { Op } = require("sequelize");
+
 const typeDefs = gql`
   type Book {
     id: Int!
     title: String!
     description: String!
     publishedAt: String!
+    profilePhotoUrl: String
     author: Author!
     author_id: Int!
   }
@@ -19,31 +23,58 @@ const typeDefs = gql`
     id: Int!
     name: String!
     biography: String!
+    profilePhotoUrl: String
     books: [Book]
     date_of_birth: String!
   }
 
+  type BookConnection {
+    books: [Book!]!
+    totalCount: Int!
+    hasMore: Boolean!
+  }
+
+  type AuthorConnection {
+    authors: [Author!]!
+    totalCount: Int!
+    hasMore: Boolean!
+  }
+
   type Query {
     book(id: Int!): Book
-    books: [Book!]!
+    books(page: Int, size: Int, searchTitle: String): BookConnection!
     author(id: Int!): Author
-    authors: [Author!]!
+    authors(page: Int, size: Int, searchName: String): AuthorConnection!
+    allAuthors: [Author!]!
   }
   type Mutation {
-    addBook(title: String!, description: String!, author_id: Int!): Book
-    addAuthor(name: String!, biography: String!): Author
+    addBook(
+      title: String!
+      description: String!
+      author_id: Int!
+      profilePhotoUrl: String
+      publishedAt: String!
+    ): Book
+    addAuthor(
+      name: String!
+      biography: String!
+      profilePhotoUrl: String
+      date_of_birth: String!
+    ): Author
     updateBook(
       id: Int!
       title: String
       description: String
       publishedAt: String
       author_id: Int
+      profilePhotoUrl: String
     ): Book
     updateAuthor(
       id: Int!
       name: String
       biography: String
       date_of_birth: String
+      profilePhotoUrl: String
     ): Author
     deleteBook(id: Int!): Int
     deleteAuthor(id: Int!): Int
@@ -51,15 +82,24 @@ const typeDefs = gql`
 `;
 
 const batchAuthors = new DataLoader(async (author_ids) => {
-  const authorsList = await Author.findAll({
+  let authorsList = await Author.findAll({
     where: {
       id: {
         [Op.in]: author_ids,
       },
     },
   });
-  // Dataloader expects you to return a list with the results ordered just like the list in the arguments were
-  // Since the database might return the results in a different order the following code sorts the results accordingly
+  authorsList = Promise.all(
+    authorsList.map(async (author) => {
+      return {
+        ...author.toJSON(),
+        profilePhotoUrl: await validateImageUrl(
+          author.profilePhotoUrl,
+          "author"
+        ),
+      };
+    })
+  );
   const idToAuthor = authorsList.reduce((mapping, author) => {
     mapping[author.id] = author;
     return mapping;
@@ -68,15 +108,22 @@ const batchAuthors = new DataLoader(async (author_ids) => {
 });
 
 const batchBooks = new DataLoader(async (author_ids) => {
-  const booksList = await Book.findAll({
+  let booksList = await Book.findAll({
     where: {
       author_id: {
         [Op.in]: author_ids,
       },
     },
   });
-  // Dataloader expects you to return a list with the results ordered just like the list in the arguments were
-  // Since the database might return the results in a different order the following code sorts the results accordingly
+  booksList = Promise.all(
+    booksList.map(async (book) => {
+      return {
+        ...book.toJSON(),
+
+        profilePhotoUrl: await validateImageUrl(book.profilePhotoUrl, "book"),
+      };
+    })
+  );
   const authorIdToBook = booksList.reduce((mapping, book) => {
     if (book.author_id in mapping) {
       mapping[book.author_id].push(book);
@@ -92,17 +139,75 @@ const batchBooks = new DataLoader(async (author_ids) => {
 
 const resolvers = {
   Query: {
-    books: async () => {
-      return await Book.findAll();
+    books: async (_, { page = 0, size = 5, searchTitle = null }) => {
+      const offset = page * size;
+      const where = searchTitle
+        ? {
+            title: {
+              [Op.like]: `%${searchTitle}%`,
+            },
+          }
+        : {};
+
+      const { rows, count } = await Book.findAndCountAll({
+        where,
+        limit: size,
+        offset: offset,
+      });
+
+      const validatedBooks = await Promise.all(
+        rows.map(async (book) => ({
+          ...book.toJSON(),
+          profilePhotoUrl: await validateImageUrl(book.profilePhotoUrl, "book"),
+        }))
+      );
+
+      return {
+        books: validatedBooks,
+        totalCount: count,
+        hasMore: offset + rows.length < count,
+      };
     },
-    authors: async () => {
-      return await Author.findAll();
+    authors: async (_, { page = 0, size = 5, searchName = null }) => {
+      const offset = page * size;
+      const where = searchName
+        ? {
+            name: {
+              [Op.like]: `%${searchName}%`,
+            },
+          }
+        : {};
+
+      const { rows, count } = await Author.findAndCountAll({
+        where,
+        limit: size,
+        offset: offset,
+      });
+
+      const validatedAuthors = await Promise.all(
+        rows.map(async (author) => ({
+          ...author.toJSON(),
+          profilePhotoUrl: await validateImageUrl(
+            author.profilePhotoUrl,
+            "author"
+          ),
+        }))
+      );
+
+      return {
+        authors: validatedAuthors,
+        totalCount: count,
+        hasMore: offset + rows.length < count,
+      };
     },
     book: async (parent, args, context, info) => {
       return Book.findByPk(args.id);
     },
     author: async (parent, args, context, info) => {
       return Author.findByPk(args.id);
+    },
+    allAuthors: async () => {
+      return await Author.findAll();
     },
   },
   Book: {
@@ -120,9 +225,13 @@ const resolvers = {
       return await Book.create(args, { returning: true });
     },
     addAuthor: async (parent, args, context, info) => {
-      return await Author.create(args, { returning: true });
+      const result = await Author.create(args, { returning: true });
+      return result;
     },
     updateBook: async (parent, args, context, info) => {
+      if (args.publishedAt) {
+        args.publishedAt = moment(args.publishedAt);
+      }
       return (
         await Book.update(args, {
           where: { id: args.id },
@@ -132,6 +241,9 @@ const resolvers = {
     },
     updateAuthor: async (parent, args, context, info) => {
       try {
+        if (args.date_of_birth) {
+          args.date_of_birth = moment(args.date_of_birth);
+        }
         let result = await Author.update(args, {
           where: { id: args.id },
           returning: true,
