@@ -2,101 +2,102 @@ import Author from "@/models/authors";
 import Book from "@/models/books";
 import Link from "next/link";
 import { Op } from "sequelize";
+import AuthorItem from "../components/AuthorItem";
+import BookItem from "../components/BookItem";
 import Pagination from "../components/Pagination";
 import SearchForm from "../components/SearchForm";
-import styles from "../styles/shared.module.css";
+import { validateImageUrl } from "../utils/imageValidator";
 import { getPaginationParams } from "../utils/pagination";
-import authorStyles from "./authors.module.css";
 import CreateAuthorForm from "./CreateAuthorForm";
-
 export default async function ServerAuthorsComponent({ params, searchParams }) {
-  const { page, size } = getPaginationParams(searchParams);
+  const { page, size, searchTerm } = getPaginationParams(searchParams);
   let data = [];
-  if (searchParams && "search" in searchParams) {
-    const searchTerm = searchParams["search"];
-    data = await Author.findAll({
-      include: Book,
-      where: {
-        [Op.or]: {
-          name: {
-            [Op.like]: `%${searchTerm}%`,
-          },
-          biography: {
-            [Op.like]: `%${searchTerm}%`,
-          },
+  const offset = page * size;
+  const where = searchTerm
+    ? {
+        name: {
+          [Op.like]: `%${searchTerm}%`,
         },
-      },
-      offset: page * size,
-      limit: size,
-    });
-  } else {
-    data = await Author.findAll({
-      include: Book,
-      offset: page * size,
-      limit: size,
-    });
-  }
+      }
+    : {};
 
+  const { rows, count } = await Author.findAndCountAll({
+    where,
+    limit: size,
+    offset: offset,
+    include: [Book],
+  });
+
+  const validatedAuthors = await Promise.all(
+    rows.map(async (author) => ({
+      ...author.toJSON(),
+      profilePhotoUrl: await validateImageUrl(author.profilePhotoUrl, "author"),
+      Books: await Promise.all(
+        author.Books.map(async (book) => ({
+          ...book.toJSON(),
+          profilePhotoUrl: await validateImageUrl(book.profilePhotoUrl, "book"),
+        }))
+      ),
+    }))
+  );
+
+  data = validatedAuthors;
   return (
     <>
-      <div className={styles.container}>
-        <h1 className={styles.pageTitle}>Authors and Their Books</h1>
-        <div className={styles.searchFormCreateFormContainer}>
-          <SearchForm placeholder="Search Authors" />
-          <CreateAuthorForm />
+      <div className="container mx-auto px-4">
+        <h1 className="text-3xl font-bold text-center mb-8 text-dark-primary">
+          Authors and Their Books
+        </h1>
+        <div className="flex flex-col justify-center items-center gap-8 mb-8">
+          <div className="w-1/2">
+            <SearchForm placeholder="Search Authors" />
+          </div>
+          <div className="w-1/2">
+            <CreateAuthorForm />
+          </div>
         </div>
-
-        <table className={styles.table}>
+        <table className="w-full border-collapse mb-8">
           <thead>
             <tr>
-              <th className={styles.tableHeader}>Author</th>
-              <th className={styles.tableHeader}>Books</th>
+              <th className="bg-dark-primary text-dark-foreground font-bold text-left p-4">
+                Author
+              </th>
+              <th className="bg-dark-primary text-dark-foreground font-bold text-left p-4">
+                Books
+              </th>
             </tr>
           </thead>
           <tbody>
             {data.map((author) => (
-              <tr key={author.id} className={styles.tableRow}>
-                <td className={styles.tableCell}>
+              <tr key={author.id} className="border-b border-dark-secondary">
+                <td className="p-4">
                   <Link
                     href={`/authors/${author.id}`}
-                    className={authorStyles.authorLink}
+                    className="block hover:bg-dark-secondary rounded transition-all duration-200 transform hover:scale-105 cursor-pointer"
                   >
-                    <div className={authorStyles.authorInfo}>
-                      <p>
-                        <span className={authorStyles.label}>Name:</span>
-                        {author.name}
-                      </p>
-                      <p>
-                        <span className={authorStyles.label}>Biography:</span>
-                        {author.biography}
-                      </p>
-                    </div>
+                    <AuthorItem
+                      name={author.name}
+                      biography={author.biography}
+                      profilePhotoUrl={author.profilePhotoUrl}
+                      date_of_birth={author.date_of_birth}
+                    />
                   </Link>
                 </td>
-                <td className={styles.tableCell}>
-                  <ul className={authorStyles.bookList}>
-                    {author.Books.map((book) => (
-                      <li key={book.id}>
-                        <Link
-                          href={`/books/${book.id}`}
-                          className={authorStyles.bookLink}
-                        >
-                          <div className={authorStyles.bookInfo}>
-                            <p>
-                              <span className={authorStyles.label}>Title:</span>
-                              {book.title}
-                            </p>
-                            <p>
-                              <span className={authorStyles.label}>
-                                Description:
-                              </span>
-                              {book.description}
-                            </p>
-                          </div>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                <td className="p-4">
+                  {author.Books.map((book) => (
+                    <Link
+                      key={book.id}
+                      href={`/books/${book.id}`}
+                      className="block hover:bg-dark-secondary rounded transition-all duration-200 transform hover:scale-105 cursor-pointer mb-2"
+                    >
+                      <BookItem
+                        title={book.title}
+                        description={book.description}
+                        profilePhotoUrl={book.profilePhotoUrl}
+                        publishedAt={book.publishedAt}
+                      />
+                    </Link>
+                  ))}
                 </td>
               </tr>
             ))}

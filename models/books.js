@@ -1,3 +1,4 @@
+const moment = require("moment/moment");
 const sequelize = require("./database");
 const { Sequelize, DataTypes } = require("sequelize");
 const Book = sequelize.define(
@@ -24,11 +25,21 @@ const Book = sequelize.define(
     publishedAt: {
       type: DataTypes.DATE,
       allowNull: true,
+      get() {
+        return this.getDataValue("publishedAt").toDateString();
+      },
+      set(value) {
+        this.setDataValue("publishedAt", moment(value).toDate());
+      },
+    },
+    profilePhotoUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {
     // Other model options go here
-  },
+  }
 );
 // `sequelize.define` also returns the model
 console.log(Book === sequelize.models.Book); // true

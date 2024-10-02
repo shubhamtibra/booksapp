@@ -3,25 +3,37 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary: #4299e1;
+  --secondary: #a0aec0;
+  --background: #f0f4f8;
+  --text: #333333;
+  --accent: #ed8936;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --primary: #4299e1;
+  --secondary: #a0aec0;
+  --background: #1a202c;
+  --text: #e2e8f0;
+  --accent: #ed8936;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-dark-background text-dark-foreground transition-colors duration-200;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-semibold text-white bg-dark-primary hover:bg-dark-accent transition-colors duration-200 shadow-md hover:shadow-lg;
+  }
+  .btn:disabled {
+    @apply opacity-50 cursor-not-allowed bg-gray-500;
+  }
+  .input {
+    @apply px-4 py-2 rounded-md bg-dark-background border border-dark-secondary focus:border-dark-primary focus:ring-1 focus:ring-dark-primary transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-dark-background border border-dark-secondary rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200;
   }
 }
