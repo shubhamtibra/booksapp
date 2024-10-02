@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { gql, useMutation } from "@apollo/client";
-import styles from "./books.module.css";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import styles from "../styles/shared.module.css";
 
 const CREATE_BOOK = gql`
   mutation CreateBook(
@@ -22,12 +22,23 @@ const CREATE_BOOK = gql`
 export default function CreateBookForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [author_id, setauthor_id] = useState("");
+  const [author_id, setAuthorId] = useState("");
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [createBook] = useMutation(CREATE_BOOK);
   const router = useRouter();
 
+  useEffect(() => {
+    setIsFormValid(
+      title.trim() !== "" &&
+        description.trim() !== "" &&
+        author_id.trim() !== ""
+    );
+  }, [title, description, author_id]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
       const newBook = await createBook({
         variables: { title, description, author_id: parseInt(author_id) },
@@ -35,34 +46,40 @@ export default function CreateBookForm() {
       router.push(`/books/${newBook.data.addBook.id}`);
     } catch (error) {
       console.error("Error creating book:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className={styles.editForm}>
+    <form onSubmit={handleSubmit} className={styles.form}>
       <input
-        className={styles.editInput}
+        className={styles.input}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Book Title"
         required
       />
       <textarea
-        className={styles.editTextarea}
+        className={styles.textarea}
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Book Description"
         required
       />
       <input
-        className={styles.editInput}
+        className={styles.input}
         type="number"
         value={author_id}
-        onChange={(e) => setauthor_id(e.target.value)}
+        onChange={(e) => setAuthorId(e.target.value)}
         placeholder="Author ID"
         required
       />
-      <button type="submit" className={styles.editButton}>
+      <button
+        type="submit"
+        className={styles.button}
+        disabled={!isFormValid || isSubmitting}
+      >
         Create Book
       </button>
     </form>

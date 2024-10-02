@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./BookItem.module.css";
 
 const BookItem = ({ title, description }) => (

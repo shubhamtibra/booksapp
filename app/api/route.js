@@ -1,7 +1,7 @@
 import Author from "@/models/authors";
-import DataLoader from "dataloader";
 import { ApolloServer } from "@apollo/server";
 import { startServerAndCreateNextHandler } from "@as-integrations/next";
+import DataLoader from "dataloader";
 import { gql } from "graphql-tag";
 const Book = require("../../models/books");
 const { Op } = require("sequelize");
@@ -157,4 +157,4 @@ const server = new ApolloServer({
 });
 
 const handler = startServerAndCreateNextHandler(server);
-export { handler as GET, handler as POST, handler as PUT, handler as DELETE };
+export { handler as DELETE, handler as GET, handler as POST, handler as PUT };

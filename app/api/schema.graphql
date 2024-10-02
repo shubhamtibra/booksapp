@@ -5,7 +5,7 @@ type Book {
   author: Author!
 }
 
-type Author {   
+type Author {
   name: String!
   biography: String!
   books: [Book!]!
@@ -13,8 +13,8 @@ type Author {
 }
 
 type Query {
- book: Book
- books: [Book!]!
- author: Author
- authors: [Author!]!
+  book: Book
+  books: [Book!]!
+  author: Author
+  authors: [Author!]!
 }

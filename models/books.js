@@ -28,7 +28,7 @@ const Book = sequelize.define(
   },
   {
     // Other model options go here
-  }
+  },
 );
 // `sequelize.define` also returns the model
 console.log(Book === sequelize.models.Book); // true
