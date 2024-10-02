@@ -6,6 +6,18 @@ import { useEffect, useState } from "react";
 import BookItem from "../../components/BookItem";
 import { validateImageUrl } from "../../utils/imageValidator";
 
+const ADD_REVIEW = gql`
+  mutation AddReview($bookId: Int!, $rating: Int!, $comment: String) {
+    addReview(bookId: $bookId, rating: $rating, comment: $comment) {
+      id
+      reviews {
+        rating
+        comment
+      }
+    }
+  }
+`;
+
 const GET_BOOK = gql`
   query GetBook($id: Int!) {
     book(id: $id) {
@@ -15,6 +27,10 @@ const GET_BOOK = gql`
       profilePhotoUrl
       publishedAt
       author_id
+      reviews {
+        rating
+        comment
+      }
     }
   }
 `;
@@ -67,6 +83,11 @@ export default function BookComponent() {
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profilePhotoUrl, setProfilePhotoUrl] = useState("");
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [hoveredRating, setHoveredRating] = useState(0);
+
+  const [addReview] = useMutation(ADD_REVIEW);
   const { data: authorsData, loading: authorsLoading } =
     useQuery(GET_ALL_AUTHORS);
   useEffect(() => {
@@ -113,6 +134,17 @@ export default function BookComponent() {
       [e.target.name]: e.target.value,
     });
     setIsFormChanged(true);
+  };
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    await addReview({
+      variables: {
+        bookId: bookId,
+        rating: parseInt(rating),
+        comment,
+      },
+    });
+    // Reset form and refetch book data
   };
   if (loading)
     return (
@@ -197,15 +229,52 @@ export default function BookComponent() {
           </form>
         ) : (
           <>
+            <button className="btn w-full mb-4" onClick={handleEdit}>
+              Edit Book
+            </button>
             <BookItem
               title={editedBook.title}
               description={editedBook.description}
               profilePhotoUrl={profilePhotoUrl}
               publishedAt={editedBook.publishedAt}
+              reviews={editedBook.reviews}
+              displayReviews={true}
             />
-            <button className="btn w-full mt-4" onClick={handleEdit}>
-              Edit Book
-            </button>
+
+            <div className="mt-4">
+              <h2 className="font-bold text-dark-primary text-lg">
+                Add a Review
+              </h2>
+              <form onSubmit={handleReviewSubmit}>
+                <div className="text-2xl">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      onMouseEnter={() => setHoveredRating(star)}
+                      onMouseLeave={() => setHoveredRating(0)}
+                      className={`transition-colors duration-200 ${
+                        star <= (hoveredRating || rating)
+                          ? "text-yellow-500"
+                          : "text-gray-300"
+                      }`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Your review"
+                  className="input w-full mt-2 mb-2"
+                />
+                <button type="submit" className="btn">
+                  Submit Review
+                </button>
+              </form>
+            </div>
           </>
         )}
       </div>

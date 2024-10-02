@@ -95,6 +95,7 @@ export default async function ServerAuthorsComponent({ params, searchParams }) {
                         description={book.description}
                         profilePhotoUrl={book.profilePhotoUrl}
                         publishedAt={book.publishedAt}
+                        reviews={book.reviews}
                       />
                     </Link>
                   ))}

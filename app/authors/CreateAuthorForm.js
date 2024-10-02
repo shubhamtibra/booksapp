@@ -65,42 +65,47 @@ export default function CreateAuthorForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <input
-        className="input w-full text-dark-foreground"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Author Name"
-        required
-      />
-      <textarea
-        className="input w-full h-32 text-dark-foreground"
-        value={biography}
-        onChange={(e) => setBiography(e.target.value)}
-        placeholder="Author Biography"
-        required
-      />
-      <input
-        className="input w-full text-dark-foreground"
-        value={profilePhotoUrl}
-        onChange={(e) => setProfilePhotoUrl(e.target.value)}
-        placeholder="Profile Photo URL (optional)"
-      />
-      <input
-        className="input w-full text-dark-foreground"
-        value={date_of_birth}
-        onChange={(e) => setDateOfBirth(e.target.value)}
-        placeholder="Date of Birth (optional)"
-        type="date"
-      ></input>
-
-      <button
-        type="submit"
-        className="btn w-full"
-        disabled={!isFormValid || isSubmitting}
-      >
+    <div>
+      <h2 className="text-xl font-bold text-dark-primary mb-4">
         Create Author
-      </button>
-    </form>
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          className="input w-full text-dark-foreground"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Author Name"
+          required
+        />
+        <textarea
+          className="input w-full h-32 text-dark-foreground"
+          value={biography}
+          onChange={(e) => setBiography(e.target.value)}
+          placeholder="Author Biography"
+          required
+        />
+        <input
+          className="input w-full text-dark-foreground"
+          value={profilePhotoUrl}
+          onChange={(e) => setProfilePhotoUrl(e.target.value)}
+          placeholder="Profile Photo URL (optional)"
+        />
+        <input
+          className="input w-full text-dark-foreground"
+          value={date_of_birth}
+          onChange={(e) => setDateOfBirth(e.target.value)}
+          placeholder="Date of Birth (optional)"
+          type="date"
+        ></input>
+
+        <button
+          type="submit"
+          className="btn w-full"
+          disabled={!isFormValid || isSubmitting}
+        >
+          Create Author
+        </button>
+      </form>
+    </div>
   );
 }
