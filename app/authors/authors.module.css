@@ -9,7 +9,13 @@
     margin-bottom: 2rem;
     text-align: center;
   }
-  
+  .searchForm {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
   .authorBooksCard {
     background-color: #fff;
     border-radius: 8px;

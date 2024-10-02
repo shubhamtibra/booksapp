@@ -8,6 +8,8 @@ import NextPage from "./nextPage";
 import Link from "next/link";
 import * as linkStyle from "../styles/link.module.css";
 import CreateBookForm from "./CreateBookForm";
+import SearchBooks from "./searchBooks";
+import { Op } from "sequelize";
 
 export default async function ServerBooksComponent({ params, searchParams }) {
   let [page, size] = [0, 10];
@@ -17,17 +19,38 @@ export default async function ServerBooksComponent({ params, searchParams }) {
   if (searchParams && "size" in searchParams) {
     size = searchParams["size"];
   }
-
-  const data = await Book.findAll({
+  let data = [];
+  if (searchParams && "search" in searchParams) {
+    const searchTerm = searchParams["search"];
+    data = await Book.findAll({
+      include: Author,
+      where: {
+        [Op.or]: {
+          title: {
+            [Op.like]: `%${searchTerm}%`,
+          },
+          description: {
+            [Op.like]: `%${searchTerm}%`,
+          },
+        }
+      },
+      offset: page * size,
+      limit: size,
+    });
+  }
+  else {
+    data = await Book.findAll({
     include: Author,
     offset: page * size,
     limit: size,
   });
+}
 
   return (
     <>
       <div className={styles.booksContainer}>
         <h1 className={styles.pageTitle}>Books and Authors</h1>
+        <SearchBooks></SearchBooks>
         <CreateBookForm />
         {data.map((bookObject) => (
           <div key={bookObject.id} className={styles.bookAuthorCard}>
