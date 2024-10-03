@@ -1,6 +1,6 @@
 const AuthorItem = ({ name, biography, profilePhotoUrl, date_of_birth }) => {
   return (
-    <div className="card p-4 flex items-center">
+    <div className="card p-4 flex items-center gap-1 bg-dark-itemBackground shadow-custom shadow-dark-shadow hover:shadow-lg hover:shadow-dark-shadow transition-shadow duration-300">
       <img
         src={profilePhotoUrl}
         alt={name}

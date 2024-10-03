@@ -1,6 +1,6 @@
 "use client";
 import { gql, useMutation, useQuery } from "@apollo/client";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AuthorItem from "../../components/AuthorItem";
 import { validateImageUrl } from "../../utils/imageValidator";
@@ -50,6 +50,7 @@ export default function AuthorComponent() {
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profilePhotoUrl, setProfilePhotoUrl] = useState("");
+  const router = useRouter();
   const { data, loading, error } = useQuery(GET_AUTHOR, {
     variables: { id: authorId },
   });
@@ -88,6 +89,7 @@ export default function AuthorComponent() {
         "author"
       );
       setProfilePhotoUrl(validUrl);
+      router.refresh();
     } catch (error) {
       console.error("Error updating author:", error);
     } finally {

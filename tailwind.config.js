@@ -9,11 +9,17 @@ module.exports = {
     extend: {
       colors: {
         dark: {
-          background: "#1a202c",
+          background: "#1e2433",
+          itemBackground: "#1a202c",
           foreground: "#e2e8f0",
           primary: "#4299e1",
           secondary: "#a0aec0",
           accent: "#ed8936",
+          shadow: "rgba(255, 255, 255, 0.1)",
+        },
+        boxShadow: {
+          custom:
+            "0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -1px var(--tw-shadow-color)",
         },
       },
       animation: {

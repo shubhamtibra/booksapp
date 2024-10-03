@@ -27,7 +27,7 @@ const BookItem = ({
 
   return (
     <>
-      <div className="card p-4 flex items-center gap-1">
+      <div className="card p-4 flex items-center gap-1 bg-dark-itemBackground shadow-custom shadow-dark-shadow hover:shadow-lg hover:shadow-dark-shadow transition-shadow duration-300">
         {profilePhotoUrl && (
           <img
             src={profilePhotoUrl || placeholderImage}

@@ -1,14 +1,17 @@
 import Author from "@/models/authors";
 import Book from "@/models/books";
 import Link from "next/link";
+import { RxAvatar } from "react-icons/rx";
 import { Op } from "sequelize";
 import AuthorItem from "../components/AuthorItem";
 import BookItem from "../components/BookItem";
+import EntriesPerPageDropdown from "../components/entriesPerPage";
 import Pagination from "../components/Pagination";
 import SearchForm from "../components/SearchForm";
 import { validateImageUrl } from "../utils/imageValidator";
 import { getPaginationParams } from "../utils/pagination";
 import CreateAuthorForm from "./CreateAuthorForm";
+
 export default async function ServerAuthorsComponent({ params, searchParams }) {
   const { page, size, searchTerm } = getPaginationParams(searchParams);
   let data = [];
@@ -26,6 +29,7 @@ export default async function ServerAuthorsComponent({ params, searchParams }) {
     limit: size,
     offset: offset,
     include: [Book],
+    distinct: true,
   });
 
   const validatedAuthors = await Promise.all(
@@ -42,6 +46,9 @@ export default async function ServerAuthorsComponent({ params, searchParams }) {
   );
 
   data = validatedAuthors;
+  const totalPages = Math.ceil(count / size);
+  const hasEntries = rows.length > 0;
+
   return (
     <>
       <div className="container mx-auto px-4">
@@ -56,6 +63,16 @@ export default async function ServerAuthorsComponent({ params, searchParams }) {
             <CreateAuthorForm />
           </div>
         </div>
+        <div className="flex items-center justify-end gap-4 mb-4">
+          <EntriesPerPageDropdown currentSize={size} />
+          {hasEntries && (
+            <div className="text-dark-foreground">
+              Showing {offset + 1} to {Math.min(offset + size, count)} of{" "}
+              {count} entries
+            </div>
+          )}
+        </div>
+
         <table className="w-full border-collapse mb-8">
           <thead>
             <tr>
@@ -105,7 +122,22 @@ export default async function ServerAuthorsComponent({ params, searchParams }) {
           </tbody>
         </table>
       </div>
-      <Pagination />
+      {!hasEntries && (
+        <div className="flex flex-col items-center justify-center h-64">
+          <RxAvatar className="text-6xl text-dark-primary mb-4" />
+          <p className="text-xl text-dark-foreground">
+            No authors found on this page
+          </p>
+        </div>
+      )}
+      {count > 0 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          baseUrl="/authors"
+          searchParams={searchParams}
+        />
+      )}
     </>
   );
 }

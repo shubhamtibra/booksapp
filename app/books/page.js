@@ -1,9 +1,11 @@
 import Author from "@/models/authors";
 import Book from "@/models/books";
 import Link from "next/link";
+import { FaBookOpen } from "react-icons/fa";
 import { Op } from "sequelize";
 import AuthorItem from "../components/AuthorItem";
 import BookItem from "../components/BookItem";
+import EntriesPerPageDropdown from "../components/entriesPerPage";
 import Pagination from "../components/Pagination";
 import SearchForm from "../components/SearchForm";
 import { validateImageUrl } from "../utils/imageValidator";
@@ -44,6 +46,8 @@ export default async function ServerBooksComponent({ params, searchParams }) {
   );
 
   data = validatedBooks;
+  const totalPages = Math.ceil(count / size);
+  const hasEntries = rows.length > 0;
 
   return (
     <>
@@ -59,7 +63,15 @@ export default async function ServerBooksComponent({ params, searchParams }) {
             <CreateBookForm />
           </div>
         </div>
-
+        <div className="flex items-center justify-end gap-4 mb-4">
+          <EntriesPerPageDropdown currentSize={size} />
+          {hasEntries && (
+            <div className="text-dark-foreground">
+              Showing {offset + 1} to {Math.min(offset + size, count)} of{" "}
+              {count} entries
+            </div>
+          )}
+        </div>
         <table className="w-full border-collapse mb-8">
           <thead>
             <tr>
@@ -107,8 +119,19 @@ export default async function ServerBooksComponent({ params, searchParams }) {
             ))}
           </tbody>
         </table>
+        {!hasEntries && (
+          <div className="flex flex-col items-center justify-center h-64">
+            <FaBookOpen className="text-6xl text-dark-primary mb-4" />
+            <p className="text-xl text-dark-foreground">No books found.</p>
+          </div>
+        )}
       </div>
-      <Pagination />
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        baseUrl="/books"
+        searchParams={searchParams}
+      />
     </>
   );
 }

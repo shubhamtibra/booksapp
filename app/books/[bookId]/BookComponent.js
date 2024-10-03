@@ -1,7 +1,7 @@
 "use client";
 
 import { gql, useMutation, useQuery } from "@apollo/client";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import BookItem from "../../components/BookItem";
 import { validateImageUrl } from "../../utils/imageValidator";
@@ -83,9 +83,10 @@ export default function BookComponent() {
   const [isFormChanged, setIsFormChanged] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [profilePhotoUrl, setProfilePhotoUrl] = useState("");
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(null);
   const [comment, setComment] = useState("");
   const [hoveredRating, setHoveredRating] = useState(0);
+  const router = useRouter();
 
   const [addReview] = useMutation(ADD_REVIEW);
   const { data: authorsData, loading: authorsLoading } =
@@ -121,6 +122,7 @@ export default function BookComponent() {
       setIsFormChanged(false);
       let validUrl = await validateImageUrl(editedBook.profilePhotoUrl, "book");
       setProfilePhotoUrl(validUrl);
+      router.refresh();
     } catch (error) {
       console.error("Error updating book:", error);
     } finally {
@@ -144,7 +146,8 @@ export default function BookComponent() {
         comment,
       },
     });
-    // Reset form and refetch book data
+    setRating(0);
+    setComment("");
   };
   if (loading)
     return (
@@ -263,23 +266,33 @@ export default function BookComponent() {
                 Add a Review
               </h2>
               <form onSubmit={handleReviewSubmit}>
-                <div className="text-2xl">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setRating(star)}
-                      onMouseEnter={() => setHoveredRating(star)}
-                      onMouseLeave={() => setHoveredRating(0)}
-                      className={`transition-colors duration-200 ${
-                        star <= (hoveredRating || rating)
-                          ? "text-yellow-500"
-                          : "text-gray-300"
-                      }`}
-                    >
-                      ★
-                    </button>
-                  ))}
+                <div className="flex items-end justify-start space-x-2 gap-2">
+                  <label
+                    htmlFor="rating"
+                    className="inline text-dark-primary mb-1"
+                  >
+                    Rating:
+                  </label>
+                  <div className="text-2xl">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        name="rating"
+                        id="rating"
+                        onClick={() => setRating(star)}
+                        onMouseEnter={() => !rating && setHoveredRating(star)}
+                        onMouseLeave={() => setHoveredRating(0)}
+                        className={`transition-colors duration-200 ${
+                          star <= (hoveredRating || rating)
+                            ? "text-yellow-500"
+                            : "text-gray-300"
+                        }`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <textarea
                   value={comment}
