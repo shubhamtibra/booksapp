@@ -1,0 +1,16 @@
+.authorItem {
+    background-color: #e8f4fd;
+    border-radius: 4px;
+    padding: 1rem;
+  }
+  
+  .authorName {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+  
+  .authorBio {
+    font-size: 1rem;
+    color: #34495e;
+  }
