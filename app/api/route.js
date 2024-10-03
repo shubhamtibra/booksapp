@@ -17,6 +17,12 @@ const typeDefs = gql`
     profilePhotoUrl: String
     author: Author!
     author_id: Int!
+    reviews: [Review]
+  }
+
+  type Review {
+    rating: Int!
+    comment: String
   }
 
   type Author {
@@ -78,6 +84,7 @@ const typeDefs = gql`
     ): Author
     deleteBook(id: Int!): Int
     deleteAuthor(id: Int!): Int
+    addReview(bookId: Int!, rating: Int!, comment: String): Book
   }
 `;
 
@@ -144,7 +151,7 @@ const resolvers = {
       const where = searchTitle
         ? {
             title: {
-              [Op.like]: `%${searchTitle}%`,
+              [Op.iLike]: `%${searchTitle}%`,
             },
           }
         : {};
@@ -173,7 +180,7 @@ const resolvers = {
       const where = searchName
         ? {
             name: {
-              [Op.like]: `%${searchName}%`,
+              [Op.iLike]: `%${searchName}%`,
             },
           }
         : {};
@@ -200,8 +207,12 @@ const resolvers = {
         hasMore: offset + rows.length < count,
       };
     },
-    book: async (parent, args, context, info) => {
-      return Book.findByPk(args.id);
+    book: async (parent, { id }, context, info) => {
+      const book = await Book.findByPk(id);
+      if (!book) {
+        throw new Error("Book not found");
+      }
+      return book;
     },
     author: async (parent, args, context, info) => {
       return Author.findByPk(args.id);
@@ -259,6 +270,21 @@ const resolvers = {
     },
     deleteAuthor: async (parent, args, context, info) => {
       return await Author.destroy({ where: { id: args.id } });
+    },
+    addReview: async (_, { bookId, rating, comment }) => {
+      try {
+        const book = await Book.findByPk(bookId);
+        if (!book) {
+          throw new Error("Book not found");
+        }
+        const reviews = book.toJSON().reviews || [];
+        reviews.push({ rating, comment });
+        await book.update({ reviews });
+        return book;
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
     },
   },
 };
