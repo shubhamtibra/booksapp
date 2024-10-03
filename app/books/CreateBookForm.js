@@ -2,7 +2,7 @@
 
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 const CREATE_BOOK = gql`
   mutation CreateBook(
@@ -46,6 +46,8 @@ export default function CreateBookForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createBook] = useMutation(CREATE_BOOK);
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const [author_id, setAuthorId] = useState("");
   const { data: authorsData, loading: authorsLoading } =
     useQuery(GET_ALL_AUTHORS);
@@ -71,7 +73,9 @@ export default function CreateBookForm() {
           publishedAt,
         },
       });
-      router.push(`/books/${newBook.data.addBook.id}`);
+      startTransition(() => {
+        router.push(`/books/${newBook.data.addBook.id}`);
+      });
     } catch (error) {
       console.error("Error creating book:", error);
     } finally {
@@ -97,20 +101,7 @@ export default function CreateBookForm() {
           placeholder="Book Description"
           required
         />
-        <select
-          className="input w-full text-dark-foreground"
-          value={author_id}
-          onChange={(e) => setAuthorId(e.target.value)}
-          required
-        >
-          <option value="">Select an author</option>
-          {authorsData &&
-            authorsData.allAuthors.map((author) => (
-              <option key={author.id} value={author.id}>
-                {author.name}
-              </option>
-            ))}
-        </select>
+
         {/* <input
         className="input w-full text-dark-foreground"
         type="number"
@@ -129,9 +120,26 @@ export default function CreateBookForm() {
           className="input w-full text-dark-foreground"
           value={publishedAt}
           onChange={(e) => setPublishedAt(e.target.value)}
-          placeholder="Published At (optional)"
-          type="date"
+          placeholder="Publish date"
+          type="text"
+          onFocus={(e) => (e.target.type = "date")}
+          onBlur={(e) => (e.target.type = "text")}
         ></input>
+
+        <select
+          className="input w-full text-dark-foreground"
+          value={author_id}
+          onChange={(e) => setAuthorId(e.target.value)}
+          required
+        >
+          <option value="">Select author</option>
+          {authorsData &&
+            authorsData.allAuthors.map((author) => (
+              <option key={author.id} value={author.id}>
+                {author.name}
+              </option>
+            ))}
+        </select>
         <button
           type="submit"
           className="btn w-full"
@@ -140,6 +148,11 @@ export default function CreateBookForm() {
           Create Book
         </button>
       </form>
+      {isPending && (
+        <div className="top-1/2 left-1/2 fixed text-center align-middle h-screen w-screen z-50">
+          <div className="animate-spin-slow rounded-full h-32 w-32 border-t-2 border-b-2 border-dark-primary"></div>
+        </div>
+      )}
     </div>
   );
 }

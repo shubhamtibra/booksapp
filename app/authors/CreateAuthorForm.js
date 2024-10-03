@@ -2,7 +2,7 @@
 
 import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 const CREATE_AUTHOR = gql`
   mutation CreateAuthor(
@@ -34,6 +34,8 @@ export default function CreateAuthorForm() {
   const [isFormValid, setIsFormValid] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createAuthor] = useMutation(CREATE_AUTHOR);
+  const [isPending, startTransition] = useTransition();
+
   const router = useRouter();
 
   useEffect(() => {
@@ -56,7 +58,9 @@ export default function CreateAuthorForm() {
           date_of_birth,
         },
       });
-      router.push(`/authors/${newAuthor.data.addAuthor.id}`);
+      startTransition(() => {
+        router.push(`/authors/${newAuthor.data.addAuthor.id}`);
+      });
     } catch (error) {
       console.error("Error creating author:", error);
     } finally {
@@ -90,12 +94,24 @@ export default function CreateAuthorForm() {
           onChange={(e) => setProfilePhotoUrl(e.target.value)}
           placeholder="Profile Photo URL (optional)"
         />
+        {/* <label
+          htmlFor="date_of_birth"
+          className="block font-bold text-dark-primary mb-1"
+        >
+          Date of Birth:
+        </label> */}
+        {/* <input placeholder="Date" class="textbox-n" type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="date" /> */}
+
         <input
           className="input w-full text-dark-foreground"
           value={date_of_birth}
           onChange={(e) => setDateOfBirth(e.target.value)}
-          placeholder="Date of Birth (optional)"
-          type="date"
+          placeholder="Date of Birth"
+          type="text"
+          name="date_of_birth"
+          id="date_of_birth"
+          onFocus={(e) => (e.target.type = "date")}
+          onBlur={(e) => (e.target.type = "text")}
         ></input>
 
         <button
@@ -106,6 +122,11 @@ export default function CreateAuthorForm() {
           Create Author
         </button>
       </form>
+      {isPending && (
+        <div className="top-1/2 left-1/2 fixed text-center align-middle h-screen w-screen z-50">
+          <div className="animate-spin-slow rounded-full h-32 w-32 border-t-2 border-b-2 border-dark-primary"></div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { gql, useMutation, useQuery } from "@apollo/client";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import BookItem from "../../components/BookItem";
 import { validateImageUrl } from "../../utils/imageValidator";
@@ -86,6 +86,7 @@ export default function BookComponent() {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [hoveredRating, setHoveredRating] = useState(0);
+  const router = useRouter();
 
   const [addReview] = useMutation(ADD_REVIEW);
   const { data: authorsData, loading: authorsLoading } =
@@ -121,6 +122,7 @@ export default function BookComponent() {
       setIsFormChanged(false);
       let validUrl = await validateImageUrl(editedBook.profilePhotoUrl, "book");
       setProfilePhotoUrl(validUrl);
+      router.refresh();
     } catch (error) {
       console.error("Error updating book:", error);
     } finally {
@@ -201,13 +203,30 @@ export default function BookComponent() {
               value={editedBook.profilePhotoUrl || ""}
               onChange={handleChange}
             />
-
+            <label
+              htmlFor="publishedAt"
+              className="block text-dark-primary mb-1"
+            >
+              Publish Date:
+            </label>
+            <input
+              className="input w-full text-dark-foreground"
+              name="publishedAt"
+              id="publishedAt"
+              value={editedBook.publishedAt}
+              onChange={handleChange}
+              type="date"
+            />
+            <label htmlFor="author_id" className="block text-dark-primary mb-1">
+              Author:
+            </label>
             <select
               className="input w-full text-dark-foreground"
               value={editedBook.author_id}
               onChange={handleChange}
               required
               name="author_id"
+              id="author_id"
             >
               <option value="">Select an author</option>
               {authorsData &&

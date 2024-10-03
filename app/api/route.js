@@ -151,7 +151,7 @@ const resolvers = {
       const where = searchTitle
         ? {
             title: {
-              [Op.like]: `%${searchTitle}%`,
+              [Op.iLike]: `%${searchTitle}%`,
             },
           }
         : {};
@@ -180,7 +180,7 @@ const resolvers = {
       const where = searchName
         ? {
             name: {
-              [Op.like]: `%${searchName}%`,
+              [Op.iLike]: `%${searchName}%`,
             },
           }
         : {};
@@ -212,10 +212,7 @@ const resolvers = {
       if (!book) {
         throw new Error("Book not found");
       }
-      return {
-        ...book.toJSON(),
-        profilePhotoUrl: await validateImageUrl(book.profilePhotoUrl, "book"),
-      };
+      return book;
     },
     author: async (parent, args, context, info) => {
       return Author.findByPk(args.id);

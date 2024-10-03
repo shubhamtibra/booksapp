@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Op } from "sequelize";
 import AuthorItem from "../components/AuthorItem";
 import BookItem from "../components/BookItem";
+import EntriesPerPageDropdown from "../components/entriesPerPage";
 import Pagination from "../components/Pagination";
 import SearchForm from "../components/SearchForm";
 import { validateImageUrl } from "../utils/imageValidator";
@@ -17,7 +18,7 @@ export default async function ServerBooksComponent({ params, searchParams }) {
   const where = searchTerm
     ? {
         title: {
-          [Op.like]: `%${searchTerm}%`,
+          [Op.iLike]: `%${searchTerm}%`,
         },
       }
     : {};
@@ -44,6 +45,7 @@ export default async function ServerBooksComponent({ params, searchParams }) {
   );
 
   data = validatedBooks;
+  const totalPages = Math.ceil(count / size);
 
   return (
     <>
@@ -59,7 +61,13 @@ export default async function ServerBooksComponent({ params, searchParams }) {
             <CreateBookForm />
           </div>
         </div>
-
+        <div className="flex items-center justify-end gap-4 mb-4">
+          <EntriesPerPageDropdown currentSize={size} />
+          <div className="text-dark-foreground">
+            Showing {offset + 1} to {Math.min(offset + size, count)} of {count}{" "}
+            entries
+          </div>
+        </div>
         <table className="w-full border-collapse mb-8">
           <thead>
             <tr>
@@ -108,7 +116,12 @@ export default async function ServerBooksComponent({ params, searchParams }) {
           </tbody>
         </table>
       </div>
-      <Pagination />
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        baseUrl="/books"
+        searchParams={searchParams}
+      />
     </>
   );
 }
