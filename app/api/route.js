@@ -212,10 +212,7 @@ const resolvers = {
       if (!book) {
         throw new Error("Book not found");
       }
-      return {
-        ...book.toJSON(),
-        profilePhotoUrl: await validateImageUrl(book.profilePhotoUrl, "book"),
-      };
+      return book;
     },
     author: async (parent, args, context, info) => {
       return Author.findByPk(args.id);
